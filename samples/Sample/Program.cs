@@ -38,7 +38,8 @@ namespace Sample
 
             Console.WriteLine("Events");
             var events = await client.GetScheduledEvents();
-            events = await client.GetScheduledEvents(); // test caching
+            Console.WriteLine($"{events.Events?.Count} events found");
+            events = await client.GetScheduledEvents(onlyThisInstance: true); // test caching
             Console.WriteLine(events.DumpAsYaml());
 
             if (events.Events?.Count > 0)

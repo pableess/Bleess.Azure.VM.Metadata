@@ -4,7 +4,7 @@
 // using C# 9 records prior to NET 5
 namespace System.Runtime.CompilerServices
 {
-    public static class IsExternalInit {}
+    internal static class IsExternalInit {}
 }
 
 #endif

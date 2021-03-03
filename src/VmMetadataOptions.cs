@@ -37,7 +37,7 @@ namespace Bleess.Azure.VM.Metadata
     }
 
     /// <summary>
-    /// Options for VM metadata client
+    /// Advanced options for VM metadata client
     /// </summary>
     public class VmMetadataOptions
     {
@@ -47,9 +47,14 @@ namespace Bleess.Azure.VM.Metadata
         public AttestedDataValidationDomain AttestedDataAzureDomain { get; set; } = AttestedDataValidationDomain.NoValidate;
 
         /// <summary>
-        /// Api version for the scheduled events endpoint
+        /// Api version for the scheduled events endpoint.  
         /// </summary>
         public string ScheduledEventsApiVersion { get; set; }  = "2019-08-01";
+
+        /// <summary>
+        /// A specific metadata api version.  If left null, the client will discover the most recent available version and use that.
+        /// </summary>
+        public string MetadataApiVersion { get; set; }
 
         internal string AttestationAzureDomainValue
         {

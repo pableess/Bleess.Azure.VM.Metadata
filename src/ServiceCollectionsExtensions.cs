@@ -16,6 +16,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Adds a VM metadata client to the service collection
         /// </summary>
         /// <param name="serviceCollection"></param>
+        /// <param name="configure">optional configuration delegate</param>
         /// <returns></returns>
         public static IServiceCollection AddAzureVmMetadataClient(this IServiceCollection serviceCollection, Action<VmMetadataOptions> configure = null) 
         {

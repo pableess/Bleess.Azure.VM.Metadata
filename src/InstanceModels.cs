@@ -4,8 +4,45 @@ using System.Text;
 
 namespace Bleess.Azure.VM.Metadata
 {
-    public record VmInstance(Compute Compute, Network network);
 
+    /// <summary>
+    /// The vm instance metadata
+    /// </summary>
+    /// <param name="Compute"></param>
+    /// <param name="Network"></param>
+    public record VmInstance(Compute Compute, Network Network) : RecordBase;
+
+    /// <summary>
+    /// Compute information
+    /// </summary>
+    /// <param name="AzEnvironment"></param>
+    /// <param name="EvictionPolicy"></param>
+    /// <param name="Priority"></param>
+    /// <param name="IsHostCompatibilityLayerVm"></param>
+    /// <param name="LicenseType"></param>
+    /// <param name="Location"></param>
+    /// <param name="Name"></param>
+    /// <param name="Offer"></param>
+    /// <param name="OsProfile"></param>
+    /// <param name="OsType"></param>
+    /// <param name="PlacementGroupId"></param>
+    /// <param name="Plan"></param>
+    /// <param name="PlatformFaultDomain"></param>
+    /// <param name="PlatformUpdateDomain"></param>
+    /// <param name="PublicKeys"></param>
+    /// <param name="Publisher"></param>
+    /// <param name="ResourceGroupName"></param>
+    /// <param name="ResourceId"></param>
+    /// <param name="SecurityProfile"></param>
+    /// <param name="Sku"></param>
+    /// <param name="StorageProfile"></param>
+    /// <param name="SubscriptionId"></param>
+    /// <param name="Tags"></param>
+    /// <param name="Version"></param>
+    /// <param name="VmId"></param>
+    /// <param name="VmScaleSetName"></param>
+    /// <param name="VmSize"></param>
+    /// <param name="Zone"></param>
     public record Compute(string AzEnvironment,
         string EvictionPolicy,
         string Priority,
@@ -33,42 +70,96 @@ namespace Bleess.Azure.VM.Metadata
         string VmId,
         string VmScaleSetName,
         string VmSize,
-        string Zone);
+        string Zone) : RecordBase;
 
-    public record Network(IList<Interface> Interface);
+    /// <summary>
+    /// Network information
+    /// </summary>
+    /// <param name="Interface"></param>
+    public record Network(IList<Interface> Interface) : RecordBase;
 
-    public record Interface(Ip Ipv4, Ip Ipv6, string MacAddress);
+    /// <summary>
+    /// Network Interface information
+    /// </summary>
+    public record Interface(Ip Ipv4, Ip Ipv6, string MacAddress) : RecordBase;
 
-    public record Ip(IList<IpAddress> IpAddress, IList<Subnet> Subnet);
+    /// <summary>
+    /// IP Information
+    /// </summary>
+    public record Ip(IList<IpAddress> IpAddress, IList<Subnet> Subnet) : RecordBase;
 
-    public record IpAddress(string PrivateIpAddress, string PublicIpAddress);
+    /// <summary>
+    /// IP Adress
+    /// </summary>
+    public record IpAddress(string PrivateIpAddress, string PublicIpAddress) : RecordBase;
 
-    public record Subnet(string Address, string Prefix);
+    /// <summary>
+    /// Network Subnet
+    /// </summary>
+    public record Subnet(string Address, string Prefix) : RecordBase;
 
+    /// <summary>
+    /// The OS Profile
+    /// </summary>
+    public record OsProfile (string AdminUsername, string ComputerName, bool DisablePasswordAuthentication) : RecordBase;
 
-    public record OsProfile (string AdminUsername, string ComputerName, bool DisablePasswordAuthentication);
-
-    public record Plan(string Name, string Product, string Publisher);
+    /// <summary>
+    /// The Plan information
+    /// </summary>
+    public record Plan(string Name, string Product, string Publisher) : RecordBase;
     
-    public record PublicKey(string KeyData, string Path);
+    /// <summary>
+    /// Public Key information
+    /// </summary>
+    public record PublicKey(string KeyData, string Path) : RecordBase;
 
-    public record SecurityProfile(bool SecureBootEnabled, bool VirtualTpmEnabled);
+    /// <summary>
+    /// The security profile
+    /// </summary>
+    public record SecurityProfile(bool SecureBootEnabled, bool VirtualTpmEnabled) : RecordBase;
 
-    public record StorageProfile(IList<DataDisk> DataDisks, ImageReference ImageReference, OsDisk OsDisk);
+    /// <summary>
+    /// The storage profile
+    /// </summary>
+    public record StorageProfile(IList<DataDisk> DataDisks, ImageReference ImageReference, OsDisk OsDisk) : RecordBase;
 
-    public record DataDisk(string Caching, string CreationOption, int DiskSizeGB, Image Image, int Lun, ManagedDisk ManagedDisk, string Name, Vhd Vhd, bool writeAcceleratorEnabled);
+    /// <summary>
+    /// Data disk information
+    /// </summary>
+    public record DataDisk(string Caching, string CreationOption, int DiskSizeGB, Image Image, int Lun, ManagedDisk ManagedDisk, string Name, Vhd Vhd, bool writeAcceleratorEnabled) : RecordBase;
 
-    public record Image(string Uri);
+    /// <summary>
+    /// VM Image information
+    /// </summary>
+    public record Image(string Uri) : RecordBase;
 
-    public record ManagedDisk(string Id, string StorageAccountType);
+    /// <summary>
+    /// Managed disk information
+    /// </summary>
+    public record ManagedDisk(string Id, string StorageAccountType) : RecordBase;
 
-    public record Vhd(string uri);
+    /// <summary>
+    /// VHD information
+    /// </summary>
+    public record Vhd(string uri) : RecordBase;
 
-    public record ImageReference(string Id, string Offer, string Publisher, string Sku, string Version);
+    /// <summary>
+    /// VM Image refernce
+    /// </summary>
+    public record ImageReference(string Id, string Offer, string Publisher, string Sku, string Version) : RecordBase;
 
-    public record OsDisk(string Caching, string CreationOption, int DiskSizeGB, DiffDiskSettings DiffDiskSettings, EncryptionSettings EncryptionSettings, Image Image, ManagedDisk ManadedDisk, string Name, string OsType, Vhd Vhd, bool writeAcceleratorEnabled);
+    /// <summary>
+    /// OS Disk information
+    /// </summary>
+    public record OsDisk(string Caching, string CreationOption, int DiskSizeGB, DiffDiskSettings DiffDiskSettings, EncryptionSettings EncryptionSettings, Image Image, ManagedDisk ManadedDisk, string Name, string OsType, Vhd Vhd, bool writeAcceleratorEnabled) : RecordBase;
 
-    public record DiffDiskSettings(string Options);
+    /// <summary>
+    /// Diff disk settings
+    /// </summary>
+    public record DiffDiskSettings(string Options) : RecordBase;
 
-    public record EncryptionSettings(bool Enabled);
+    /// <summary>
+    /// Encryption settings
+    /// </summary>
+    public record EncryptionSettings(bool Enabled) : RecordBase;
 }

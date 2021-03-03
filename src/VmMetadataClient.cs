@@ -27,6 +27,9 @@ namespace Bleess.Azure.VM.Metadata
         private ScheduledEvents cachedEventResult;
         private string cachedEventResultEtag;
 
+        private string cachedVmName;
+        private bool? cachedIsRunningInAzure;
+
         public VmMetadataClient(HttpClient http, IOptionsSnapshot<VmMetadataOptions> options)
         {
             this.options = options;
@@ -70,8 +73,21 @@ namespace Bleess.Azure.VM.Metadata
             return await this.http.GetFromJsonAsync<VmInstance>($"instance?api-version={version}", this.jsonInstanceServiceOptions, cancel);
         }
 
-        public async Task<ScheduledEvents> GetScheduledEvents(CancellationToken cancel = default)
+        public async Task<ScheduledEvents> GetScheduledEvents(bool onlyThisInstance = false, CancellationToken cancel = default)
         {
+            if (onlyThisInstance && string.IsNullOrEmpty(this.cachedVmName)) 
+            {
+                var resourceResp = await this.http.GetAsync($"instance/compute/name?api-version={version}&format=text");
+                if (resourceResp.IsSuccessStatusCode)
+                {
+                    this.cachedVmName = await resourceResp.Content.ReadAsStringAsync();
+                }
+                else 
+                {
+                    throw new HttpRequestException($"Could not determine current VM resourceId: {resourceResp.StatusCode} - {resourceResp.ReasonPhrase}");
+                }
+            }
+
             // scheduled events API version is not the same as instance metadata
             // because this can be called quite frequently on polling cycles we should cache the last result and compare the etags before the entire response
             // is read and deserialzed
@@ -84,6 +100,12 @@ namespace Bleess.Azure.VM.Metadata
             {
                 this.cachedEventResult = await result.Content.ReadFromJsonAsync<ScheduledEvents>(this.jsonEventsServiceOptions, cancellationToken: cancel);
                 this.cachedEventResultEtag = resultEtag;
+            }
+
+            if (onlyThisInstance)
+            {
+                // filter the events to only events for this resource id
+                return new ScheduledEvents(this.cachedEventResult.DocumentIncarnation, this.cachedEventResult.Events.Where(e => e.Resources.Contains(this.cachedVmName)).ToList());
             }
 
             return this.cachedEventResult;
@@ -194,6 +216,33 @@ namespace Bleess.Azure.VM.Metadata
             var rand = RandomNumberGenerator.Create();
             rand.GetBytes(bytes);
             return BitConverter.ToUInt32(bytes, 0).ToString("0000000000");
+        }
+
+        public async Task<bool> IsRunningInAzure(bool validateCertificate = false, bool force = false, CancellationToken cancel = default)
+        {
+            if (this.cachedIsRunningInAzure == null || force)
+            {
+                try
+                {
+                    // ping an endpoint to see if it is an azure vm
+                    if (validateCertificate)
+                    {
+                        _ = await this.GetVersions(cancel);
+                    }
+                    else
+                    {
+                        _ = await this.GetAttestedInstanceMetadata(cancel);
+                    }
+
+                    this.cachedIsRunningInAzure = true;
+                }
+                catch (Exception) 
+                {
+                    this.cachedIsRunningInAzure = false;
+                }
+            }
+
+            return this.cachedIsRunningInAzure ?? false;
         }
     }
 }

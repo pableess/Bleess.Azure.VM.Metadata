@@ -4,11 +4,23 @@ using System.Text;
 
 namespace Bleess.Azure.VM.Metadata
 {
-    public record AttestedDocument(string Encoding, string Signature);
+    /// <summary>
+    /// Attested document
+    /// </summary>
+    public record AttestedDocument(string Encoding, string Signature) : RecordBase;
 
-    public record AttestedData(string Nonce, string VmId, string Sku, string SubscriptionId, AttestedPlan Plan, AttestedTimestamp TimeStamp);
-    public record AttestedPlan(string Name, string Product, string Publisher);
+    /// <summary>
+    /// Attested instance data
+    /// </summary>
+    public record AttestedData(string Nonce, string VmId, string Sku, string SubscriptionId, AttestedPlan Plan, AttestedTimestamp TimeStamp) : RecordBase;
+    
+    /// <summary>
+    /// Plan information
+    /// </summary>
+    public record AttestedPlan(string Name, string Product, string Publisher) : RecordBase;
 
-    // for some reason the dates aren't in a valid system.text.json date format, we would probably have to write a converter to use DateTime types
-    public record AttestedTimestamp(DateTime? CreatedOn, DateTime? ExpiresOn);
+    /// <summary>
+    /// Timestamps for attested data
+    /// </summary>
+    public record AttestedTimestamp(DateTime? CreatedOn, DateTime? ExpiresOn) : RecordBase;
 }

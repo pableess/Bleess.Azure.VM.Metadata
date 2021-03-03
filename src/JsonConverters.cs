@@ -8,7 +8,7 @@ using System.Text.Json.Serialization;
 namespace Bleess.Azure.VM.Metadata
 {
 
-    public class DateTimeConverterUsingDateTimeParse : JsonConverter<DateTime>
+    internal class DateTimeConverterUsingDateTimeParse : JsonConverter<DateTime>
     {
         public override DateTime Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
@@ -24,7 +24,7 @@ namespace Bleess.Azure.VM.Metadata
             writer.WriteStringValue(value.ToString("O"));
         }
     }
-    public class JsonStringBoolConverter : JsonConverter<bool>
+    internal  class JsonStringBoolConverter : JsonConverter<bool>
     {
         public override bool Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
