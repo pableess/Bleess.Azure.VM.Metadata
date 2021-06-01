@@ -39,6 +39,7 @@ namespace Bleess.Azure.VM.Metadata
             this.jsonInstanceServiceOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
             this.jsonInstanceServiceOptions.NumberHandling = JsonNumberHandling.AllowReadingFromString;
             this.jsonInstanceServiceOptions.Converters.Add(new JsonStringBoolConverter());
+            this.jsonInstanceServiceOptions.Converters.Add(new JsonStringNullableBoolConverter());
             this.jsonInstanceServiceOptions.Converters.Add(new DateTimeConverterUsingDateTimeParse());
 
             this.jsonEventsServiceOptions = new JsonSerializerOptions();

@@ -44,4 +44,31 @@ namespace Bleess.Azure.VM.Metadata
             writer.WriteStringValue(value.ToString());
         }
     }
+
+    internal class JsonStringNullableBoolConverter : JsonConverter<bool?>
+    {
+        public override bool? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            if (reader.TokenType == JsonTokenType.String)
+            {
+                var v = reader.GetString();
+
+                if (string.IsNullOrWhiteSpace(v) || string.Equals("NULL", v, StringComparison.OrdinalIgnoreCase)) 
+                {
+                    return null;
+                }
+
+                if (bool.TryParse(v, out bool res))
+                    return res;
+            }
+
+            // Default behavior; will throw if TokenType != Number
+            return reader.GetBoolean();
+        }
+
+        public override void Write(Utf8JsonWriter writer, bool? value, JsonSerializerOptions options)
+        {
+            writer.WriteStringValue(value.ToString());
+        }
+    }
 }
