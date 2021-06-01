@@ -101,7 +101,7 @@ namespace Bleess.Azure.VM.Metadata
     /// <summary>
     /// The OS Profile
     /// </summary>
-    public record OsProfile (string AdminUsername, string ComputerName, bool DisablePasswordAuthentication) : RecordBase;
+    public record OsProfile (string AdminUsername, string ComputerName, bool? DisablePasswordAuthentication) : RecordBase;
 
     /// <summary>
     /// The Plan information
