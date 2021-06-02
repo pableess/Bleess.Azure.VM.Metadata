@@ -38,13 +38,17 @@ namespace Bleess.Azure.VM.Metadata
             this.jsonInstanceServiceOptions.Converters.Add(new JsonStringEnumConverter());
             this.jsonInstanceServiceOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
             this.jsonInstanceServiceOptions.NumberHandling = JsonNumberHandling.AllowReadingFromString;
+            this.jsonInstanceServiceOptions.Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
             this.jsonInstanceServiceOptions.Converters.Add(new JsonStringBoolConverter());
             this.jsonInstanceServiceOptions.Converters.Add(new JsonStringNullableBoolConverter());
             this.jsonInstanceServiceOptions.Converters.Add(new DateTimeConverterUsingDateTimeParse());
 
+
             this.jsonEventsServiceOptions = new JsonSerializerOptions();
             this.jsonEventsServiceOptions.Converters.Add(new JsonStringEnumConverter());
             this.jsonEventsServiceOptions.Converters.Add(new DateTimeConverterUsingDateTimeParse());
+
+            this.version = options?.Value?.MetadataApiVersion;
 
         }
 
@@ -58,9 +62,9 @@ namespace Bleess.Azure.VM.Metadata
             return versions.ApiVersions?.ToArray();
         }
 
-        private async ValueTask<string> GetLatestVersion(CancellationToken cancel)
+        private async ValueTask<string> GetApiVersion(CancellationToken cancel)
         {
-            if (this.version == null) 
+            if (string.IsNullOrEmpty(this.version)) 
             {
                 var versions = await GetVersions(cancel);
                 this.version = versions.LastOrDefault();
@@ -70,7 +74,7 @@ namespace Bleess.Azure.VM.Metadata
 
         public async Task<VmInstance> GetVmInstanceMetadata(CancellationToken cancel = default)
         {
-            var version = await this.GetLatestVersion(cancel);
+            var version = await this.GetApiVersion(cancel);
             return await this.http.GetFromJsonAsync<VmInstance>($"instance?api-version={version}", this.jsonInstanceServiceOptions, cancel);
         }
 
@@ -127,11 +131,12 @@ namespace Bleess.Azure.VM.Metadata
             // create a nonce 
             string nonce = GetNonce();
 
-            var version = await this.GetLatestVersion(cancel);
+            var version = await this.GetApiVersion(cancel);
 
             var documentResp = await this.http.GetAsync($"attested/document?api-version={version}&nonce={nonce}", cancel);
 
             var document = await documentResp.Content.ReadFromJsonAsync<AttestedDocument>(this.jsonInstanceServiceOptions, cancel);
+
             ValidateCertificate(document);
             return this.ValidateAttestedData(document.Signature, nonce);
         }
@@ -143,9 +148,8 @@ namespace Bleess.Azure.VM.Metadata
             {
                 try
                 {
-
                     // Build certificate from response
-                    X509Certificate2 cert = new X509Certificate2(System.Text.Encoding.UTF8.GetBytes(document.Signature));
+                    X509Certificate2 cert = new X509Certificate2(Convert.FromBase64String(document.Signature));
                     // Build certificate chain
                     X509Chain chain = new X509Chain();
                     chain.Build(cert);

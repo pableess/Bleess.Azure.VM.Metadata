@@ -48,13 +48,15 @@ namespace Bleess.Azure.VM.Metadata
 
         /// <summary>
         /// Api version for the scheduled events endpoint.  
+        /// Default is '2019-08-01'
         /// </summary>
         public string ScheduledEventsApiVersion { get; set; }  = "2019-08-01";
 
         /// <summary>
         /// A specific metadata api version.  If left null, the client will discover the most recent available version and use that.
+        /// Default is '2021-01-01'
         /// </summary>
-        public string MetadataApiVersion { get; set; }
+        public string MetadataApiVersion { get; set; } = "2021-01-01";
 
         internal string AttestationAzureDomainValue
         {
