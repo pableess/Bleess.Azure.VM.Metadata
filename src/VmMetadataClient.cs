@@ -56,15 +56,16 @@ namespace Bleess.Azure.VM.Metadata
         /// Gets the versions of the Metadata API
         /// </summary>
         /// <returns></returns>
-        public async Task<string[]> GetVersions(CancellationToken cancel = default) {
-            
+        public async Task<string[]> GetVersions(CancellationToken cancel = default)
+        {
+
             var versions = await this.http.GetFromJsonAsync<Versions>("versions", this.jsonInstanceServiceOptions, cancel);
             return versions.ApiVersions?.ToArray();
         }
 
         private async ValueTask<string> GetApiVersion(CancellationToken cancel)
         {
-            if (string.IsNullOrEmpty(this.version)) 
+            if (string.IsNullOrEmpty(this.version))
             {
                 var versions = await GetVersions(cancel);
                 this.version = versions.LastOrDefault();
@@ -80,14 +81,14 @@ namespace Bleess.Azure.VM.Metadata
 
         public async Task<ScheduledEvents> GetScheduledEvents(bool onlyThisInstance = false, CancellationToken cancel = default)
         {
-            if (onlyThisInstance && string.IsNullOrEmpty(this.cachedVmName)) 
+            if (onlyThisInstance && string.IsNullOrEmpty(this.cachedVmName))
             {
                 var resourceResp = await this.http.GetAsync($"instance/compute/name?api-version={version}&format=text");
                 if (resourceResp.IsSuccessStatusCode)
                 {
                     this.cachedVmName = await resourceResp.Content.ReadAsStringAsync();
                 }
-                else 
+                else
                 {
                     throw new HttpRequestException($"Could not determine current VM resourceId: {resourceResp.StatusCode} - {resourceResp.ReasonPhrase}");
                 }
@@ -101,7 +102,7 @@ namespace Bleess.Azure.VM.Metadata
             // the api doesn't return a proper quoted etag, so the fallback here works, but we'll keep check in case they fix it
             var resultEtag = result.Headers?.ETag?.Tag ?? result.Headers?.GetValues("ETag")?.FirstOrDefault();
 
-            if (this.cachedEventResult == null || string.IsNullOrEmpty(this.cachedEventResultEtag) || !string.Equals(this.cachedEventResultEtag, resultEtag, StringComparison.Ordinal)) 
+            if (this.cachedEventResult == null || string.IsNullOrEmpty(this.cachedEventResultEtag) || !string.Equals(this.cachedEventResultEtag, resultEtag, StringComparison.Ordinal))
             {
                 this.cachedEventResult = await result.Content.ReadFromJsonAsync<ScheduledEvents>(this.jsonEventsServiceOptions, cancellationToken: cancel);
                 this.cachedEventResultEtag = resultEtag;
@@ -126,7 +127,7 @@ namespace Bleess.Azure.VM.Metadata
             res.EnsureSuccessStatusCode();
         }
 
-        public async Task<AttestedData> GetAttestedInstanceMetadata(CancellationToken cancel) 
+        public async Task<AttestedData> GetAttestedInstanceMetadata(CancellationToken cancel)
         {
             // create a nonce 
             string nonce = GetNonce();
@@ -149,30 +150,37 @@ namespace Bleess.Azure.VM.Metadata
                 try
                 {
                     // Build certificate from response
-                    X509Certificate2 cert = new X509Certificate2(Convert.FromBase64String(document.Signature));
-                    // Build certificate chain
-                    X509Chain chain = new X509Chain();
-                    chain.Build(cert);
-                    
-                    // validate the cert
-                    foreach (var element in chain.ChainElements)
-                    {
-                        element.Certificate.Verify();
-                    }
 
-                    // optionally check the domain against configured azure
-                    if (this.options.Value.AttestedDataAzureDomain != AttestedDataValidationDomain.NoValidate)
-                    {
-                        var root = chain.ChainElements[0]?.Certificate;
+                    var collection = new X509Certificate2Collection();
+                    collection.Import(Convert.FromBase64String(document.Signature));
 
-                        if (root != null) 
+                    foreach (var cert in collection)
+                    {
+
+                        X509Chain chain = new X509Chain();
+                        chain.Build(collection[0]);
+
+
+                        // validate the cert
+                        foreach (var element in chain.ChainElements)
                         {
-                            if (!root.SubjectName.Name.Split(',').Any(n => n.EndsWith(this.options.Value.AttestationAzureDomainValue)))
-                            {
-                                throw new SecurityException($"Could not validate azure domain from root certificate {this.options.Value.AttestationAzureDomainValue}");
-                            }
+                            element.Certificate.Verify();
                         }
 
+                        // optionally check the domain against configured azure
+                        if (this.options.Value.AttestedDataAzureDomain != AttestedDataValidationDomain.NoValidate)
+                        {
+                            var root = chain.ChainElements[0]?.Certificate;
+
+                            if (root != null)
+                            {
+                                if (!root.SubjectName.Name.Split(',').Any(n => n.EndsWith(this.options.Value.AttestationAzureDomainValue)))
+                                {
+                                    throw new SecurityException($"Could not validate azure domain from root certificate {this.options.Value.AttestationAzureDomainValue}");
+                                }
+                            }
+
+                        }
                     }
                 }
                 catch (CryptographicException ex)
@@ -199,7 +207,7 @@ namespace Bleess.Azure.VM.Metadata
                 //// we cannot validate the nonce because the service caches responses and will not always return the correct nonce
                 // as far as I can tell there is no way to determin if the response was cached and we shouldn't validate the nonce, so 
                 // I guess it can't really be validated
-                
+
                 //if (!data.Nonce.Equals(nonce))
                 //{
                 //  throw new SecurityException("Nonce does not match");
@@ -241,7 +249,7 @@ namespace Bleess.Azure.VM.Metadata
 
                     this.cachedIsRunningInAzure = true;
                 }
-                catch (Exception) 
+                catch (Exception)
                 {
                     this.cachedIsRunningInAzure = false;
                 }
