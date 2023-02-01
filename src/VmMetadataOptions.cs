@@ -56,7 +56,7 @@ namespace Bleess.Azure.VM.Metadata
         /// A specific metadata api version.  If left null, the client will discover the most recent available version and use that.
         /// Default is '2021-01-01'
         /// </summary>
-        public string MetadataApiVersion { get; set; } = "2021-01-01";
+        public string MetadataApiVersion { get; set; } = "2021-02-01";
 
         internal string AttestationAzureDomainValue
         {
