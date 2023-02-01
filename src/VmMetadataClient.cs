@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -19,6 +20,7 @@ namespace Bleess.Azure.VM.Metadata
     internal class VmMetadataClient : IVmMetadataClient
     {
         private readonly HttpClient http;
+        private readonly ILogger logger;
         private readonly JsonSerializerOptions jsonInstanceServiceOptions;
         private readonly JsonSerializerOptions jsonEventsServiceOptions;
         private string version;
@@ -30,10 +32,11 @@ namespace Bleess.Azure.VM.Metadata
         private string cachedVmName;
         private bool? cachedIsRunningInAzure;
 
-        public VmMetadataClient(HttpClient http, IOptionsSnapshot<VmMetadataOptions> options)
+        public VmMetadataClient(HttpClient http, ILogger<VmMetadataClient> logger, IOptionsSnapshot<VmMetadataOptions> options)
         {
             this.options = options;
             this.http = http;
+            this.logger = logger;
             this.jsonInstanceServiceOptions = new JsonSerializerOptions();
             this.jsonInstanceServiceOptions.Converters.Add(new JsonStringEnumConverter());
             this.jsonInstanceServiceOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
@@ -249,8 +252,9 @@ namespace Bleess.Azure.VM.Metadata
 
                     this.cachedIsRunningInAzure = true;
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
+                    this.logger?.LogTrace(e, $"Not running in azure: {e.GetType().Name} exception");
                     this.cachedIsRunningInAzure = false;
                 }
             }
